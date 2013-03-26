@@ -2,10 +2,10 @@
 #      Main Configs       #
 # ----------------------- #
 
-url: http://chuckg.github.com
-title: My Octopress Blog
-subtitle: A blogging framework for hackers.
-author: Your Name
+url: http://chuckg.org
+title: chuckg.notes
+subtitle: 
+author: chuckg
 simple_search: http://google.com/search
 description:
 
