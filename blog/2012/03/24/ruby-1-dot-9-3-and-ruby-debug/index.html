@@ -1,24 +1,97 @@
-<?xml version="1.0" encoding="utf-8"?>
-<feed xmlns="http://www.w3.org/2005/Atom">
 
-  <title><![CDATA[chuckg.notes]]></title>
-  <link href="http://chuckg.org/atom.xml" rel="self"/>
-  <link href="http://chuckg.org/"/>
-  <updated>2013-03-25T17:58:39-07:00</updated>
-  <id>http://chuckg.org/</id>
-  <author>
-    <name><![CDATA[chuckg]]></name>
-    
-  </author>
-  <generator uri="http://octopress.org/">Octopress</generator>
+<!DOCTYPE html>
+<!--[if IEMobile 7 ]><html class="no-js iem7"><![endif]-->
+<!--[if lt IE 9]><html class="no-js lte-ie8"><![endif]-->
+<!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  <title>ruby-1.9.3 and ruby-debug - chuckg.notes</title>
+  <meta name="author" content="chuckg">
 
   
-  <entry>
-    <title type="html"><![CDATA[ruby-1.9.3 and ruby-debug]]></title>
-    <link href="http://chuckg.org/blog/2012/03/24/ruby-1-dot-9-3-and-ruby-debug/"/>
-    <updated>2012-03-24T17:52:00-07:00</updated>
-    <id>http://chuckg.org/blog/2012/03/24/ruby-1-dot-9-3-and-ruby-debug</id>
-    <content type="html"><![CDATA[<p>To get <code>ruby-debug</code> working with <code>ruby-1.9.3-p0</code> you have to use some as yet
+  <meta name="description" content="To get ruby-debug working with ruby-1.9.3-p0 you have to use some as yet
+unpublished versions of ruby-debug-base19 (0.11.26) and it&#8217;s &hellip;">
+  
+
+  <!-- http://t.co/dKP3o1e -->
+  <meta name="HandheldFriendly" content="True">
+  <meta name="MobileOptimized" content="320">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  
+  <link rel="canonical" href="http://chuckg.org/blog/2012/03/24/ruby-1-dot-9-3-and-ruby-debug">
+  <link href="/favicon.png" rel="icon">
+  <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
+  <link href="/atom.xml" rel="alternate" title="chuckg.notes" type="application/atom+xml">
+  <script src="/javascripts/modernizr-2.0.js"></script>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
+  <script src="/javascripts/octopress.js" type="text/javascript"></script>
+  <!--Fonts from Google"s Web font directory at http://google.com/webfonts -->
+<link href="http://fonts.googleapis.com/css?family=PT+Serif:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href="http://fonts.googleapis.com/css?family=PT+Sans:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css">
+<link href='http://fonts.googleapis.com/css?family=Open+Sans' rel='stylesheet' type='text/css'>
+<link href='http://fonts.googleapis.com/css?family=Fjalla+One' rel='stylesheet' type='text/css'>
+  
+
+</head>
+
+<body   class="collapse-sidebar sidebar-footer" >
+  <header role="banner"><hgroup>
+  <h1><a href="/">chuckg.notes</a></h1>
+  
+</hgroup>
+
+</header>
+  <nav role="navigation"><ul class="subscription" data-subscription="rss">
+  <li><a href="/atom.xml" rel="subscribe-rss" title="subscribe via RSS">RSS</a></li>
+  
+</ul>
+  
+<form action="http://google.com/search" method="get">
+  <fieldset role="search">
+    <input type="hidden" name="q" value="site:chuckg.org" />
+    <input class="search" type="text" name="q" results="0" placeholder="Search"/>
+  </fieldset>
+</form>
+  
+<ul class="main-navigation">
+  <li><a href="/">Blog</a></li>
+  <li><a href="/blog/archives">Archives</a></li>
+</ul>
+
+</nav>
+  <div id="main">
+    <div id="content">
+      <div>
+<article class="hentry" role="article">
+  
+  <header>
+    
+      <h1 class="entry-title">ruby-1.9.3 and Ruby-debug</h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-24T17:52:00-07:00" pubdate data-updated="true">Mar 24<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+<div class="entry-content"><p>To get <code>ruby-debug</code> working with <code>ruby-1.9.3-p0</code> you have to use some as yet
 unpublished versions of <code>ruby-debug-base19</code> (0.11.26) and it&#8217;s dependency,
 <code>linecache19</code> (0.5.13).  Additionally, you&#8217;ll need to apply the aptly named
 &#8220;debug&#8221; patch to <code>ruby-1.9.3-p0</code>.  I don&#8217;t recall the specific reason the gems
@@ -187,7 +260,108 @@ necessary dependencies.</p>
 
 
 <p><em>Seeing this? You&#8217;re probably still using <code>ruby-debug-base19</code> (0.11.25) and <code>linecache19</code> (0.5.12).  Make sure you manually added the correct versions to your <code>Gemfile</code>.</em></p>
-]]></content>
-  </entry>
+</div>
+
+
+  <footer>
+    <p class="meta">
+      
   
-</feed>
+
+<span class="byline author vcard">Posted by <span class="fn">chuckg</span></span>
+
+      
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-24T17:52:00-07:00" pubdate data-updated="true">Mar 24<span>th</span>, 2012</time>
+      
+
+<span class="categories">
+  
+    <a class='category' href='/blog/categories/ruby/'>ruby</a>
+  
+</span>
+
+
+    </p>
+    
+      <div class="sharing">
+  
+  <a href="http://twitter.com/share" class="twitter-share-button" data-url="http://chuckg.org/blog/2012/03/24/ruby-1-dot-9-3-and-ruby-debug/" data-via="" data-counturl="http://chuckg.org/blog/2012/03/24/ruby-1-dot-9-3-and-ruby-debug/" >Tweet</a>
+  
+  
+  
+</div>
+
+    
+    <p class="meta">
+      
+      
+    </p>
+  </footer>
+</article>
+
+</div>
+
+<aside class="sidebar">
+  
+    <section>
+  <h1>Recent Posts</h1>
+  <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/03/24/ruby-1-dot-9-3-and-ruby-debug/">ruby-1.9.3 and ruby-debug</a>
+      </li>
+    
+  </ul>
+</section>
+
+
+
+
+
+  
+</aside>
+
+
+    </div>
+  </div>
+  <footer role="contentinfo"><p>
+  Copyright &copy; 2013 - chuckg -
+  <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
+</p>
+
+</footer>
+  
+
+
+
+
+
+
+
+  <script type="text/javascript">
+    (function(){
+      var twitterWidgets = document.createElement('script');
+      twitterWidgets.type = 'text/javascript';
+      twitterWidgets.async = true;
+      twitterWidgets.src = 'http://platform.twitter.com/widgets.js';
+      document.getElementsByTagName('head')[0].appendChild(twitterWidgets);
+    })();
+  </script>
+
+
+
+
+
+</body>
+</html>

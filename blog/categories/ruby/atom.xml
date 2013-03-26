@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+
+  <title><![CDATA[Category: ruby | chuckg.notes]]></title>
+  <link href="http://chuckg.org/blog/categories/ruby/atom.xml" rel="self"/>
+  <link href="http://chuckg.org/"/>
+  <updated>2013-03-25T17:58:39-07:00</updated>
+  <id>http://chuckg.org/</id>
+  <author>
+    <name><![CDATA[chuckg]]></name>
+    
+  </author>
+  <generator uri="http://octopress.org/">Octopress</generator>
+
+  
+  <entry>
+    <title type="html"><![CDATA[ruby-1.9.3 and ruby-debug]]></title>
+    <link href="http://chuckg.org/blog/2012/03/24/ruby-1-dot-9-3-and-ruby-debug/"/>
+    <updated>2012-03-24T17:52:00-07:00</updated>
+    <id>http://chuckg.org/blog/2012/03/24/ruby-1-dot-9-3-and-ruby-debug</id>
+    <content type="html"><![CDATA[<p>To get <code>ruby-debug</code> working with <code>ruby-1.9.3-p0</code> you have to use some as yet
+unpublished versions of <code>ruby-debug-base19</code> (0.11.26) and it's dependency,
+<code>linecache19</code> (0.5.13).  Additionally, you'll need to apply the aptly named
+"debug" patch to <code>ruby-1.9.3-p0</code>.  I don't recall the specific reason the gems
+are not yet available on <a href="http://rubygems.org">rubygems.org</a> (as of
+2012-02-22), but until such time, here's how you get <code>ruby-debug</code> working with
+version <code>ruby-1.9.3-p0</code>.</p>
+
+<p><em>Note</em>: If you're not using <code>rvm</code>, shame on you. You'll need to apply the patch
+manually, which I won't detail.  The patch can be found
+<a href="https://github.com/ruby/ruby/pull/47">here</a>.</p>
+
+<p>Apply the "debug" patch:</p>
+
+<pre><code>$ rvm reinstall 1.9.3-p0 --patch debug --force-autoconf
+</code></pre>
+
+<p>Point your favorite editor at your <code>Gemfile</code> and add:</p>
+
+<pre><code>gem 'ruby-debug19', :require =&gt; false
+gem 'ruby-debug-base19', :git =&gt; 'https://github.com/tribune/ruby-debug-base19.git', :require =&gt; false
+gem 'linecache19', :git =&gt; 'git@github.com:chuckg/linecache19.git', :branch =&gt; "0_5_13/dependencies", :require =&gt; false
+</code></pre>
+
+<p>And now the secret sauce to allow <code>ruby-debug-base19</code> to compile correctly:</p>
+
+<pre><code>$ bundle config build.ruby-debug-base19 --with-ruby-include=$rvm_path/src/ruby-1.9.3-p0/
+</code></pre>
+
+<p>Without the above command you'll receive the
+<code>Gem::Installer::ExtensionBuildError</code> error listed below. If you're working
+with a team, it may be useful to check the bundle config into your repository.
+Check out <code>bundle help config</code> for more details.</p>
+
+<h5>rdebug</h5>
+
+<p>The caveat to using git as the gem source for our dependencies is that they
+are installed in a separate (non-standard) gem path, causing <code>rdebug</code> to puke
+when it can't find them. <code>bundler</code> to the rescue:</p>
+
+<pre><code>$ bundle exec rdebug ...
+</code></pre>
+
+<p>This executes <code>rdebug</code> within the context of the bundle, thereby including the
+necessary dependencies.</p>
+
+<h2>Common errors:</h2>
+
+<p>For reference (and the glory of search) here are some common errors you might have seen during your journey here.</p>
+
+<h5>ruby-debug</h5>
+
+<p><code>bash
+$ bundle install
+...
+Could not find rbx-require-relative-0.0.6 in any of the sources
+</code>
+<em>You're still using the <code>ruby-debug</code> gem, not <code>ruby-debug19</code>.</em></p>
+
+<p><code>``bash
+$ rdebug -Itest test/unit/model_test.rb
+/Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/lib/ruby/site_ruby/1.9.1/rubygems/dependency.rb:247:in</code>to_specs': Could not find linecache19 (>= 0.5.11) amongst [...] (Gem::LoadError)</p>
+
+<pre><code>from /Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/lib/ruby/site_ruby/1.9.1/rubygems/specification.rb:771:in `block in activate_dependencies'
+from /Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/lib/ruby/site_ruby/1.9.1/rubygems/specification.rb:760:in `each'
+from /Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/lib/ruby/site_ruby/1.9.1/rubygems/specification.rb:760:in `activate_dependencies'
+from /Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/lib/ruby/site_ruby/1.9.1/rubygems/specification.rb:744:in `activate'
+from /Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/lib/ruby/site_ruby/1.9.1/rubygems.rb:1209:in `gem'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/bin/rdebug:18:in `&lt;main&gt;'
+</code></pre>
+
+<p><code>``
+_Trying using:</code>bundle exec rdebug ...`_</p>
+
+<h5>ruby-debug-base19</h5>
+
+<p>```bash
+Gem::Installer::ExtensionBuildError: ERROR: Failed to build gem native extension.</p>
+
+<pre><code>    /Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/bin/ruby extconf.rb 
+</code></pre>
+
+<p>checking for rb_method_entry_t.called_id in method.h... no
+checking for rb_control_frame_t.method_id in method.h... no
+extconf.rb:16:in `block in <main>': break from proc-closure (LocalJumpError)</p>
+
+<pre><code>from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/ruby_core_source-0.1.5/lib/ruby_core_source.rb:18:in `call'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/ruby_core_source-0.1.5/lib/ruby_core_source.rb:18:in `create_makefile_with_core'
+from extconf.rb:32:in `&lt;main&gt;'
+</code></pre>
+
+<p>An error occured while installing ruby-debug-base19 (0.11.26), and Bundler cannot continue.
+Make sure that <code>gem install ruby-debug-base19 -v '0.11.26'</code> succeeds before bundling.
+```
+<em>This is fixed by adding the build flags to your bundle config.</em></p>
+
+<p>```ruby
+1.9.3-p0 :001 > require 'ruby-debug'
+LoadError: dlopen(/Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/ruby-debug-base19-0.11.25/lib/ruby_debug.bundle, 9): Symbol not found: _ruby_threadptr_data_type
+  Referenced from: /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/ruby-debug-base19-0.11.25/lib/ruby_debug.bundle
+  Expected in: flat namespace
+ in /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/ruby-debug-base19-0.11.25/lib/ruby_debug.bundle - /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/ruby-debug-base19-0.11.25/lib/ruby_debug.bundle</p>
+
+<pre><code>from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `require'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `block in require'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:236:in `load_dependency'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `require'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/ruby-debug-base19-0.11.25/lib/ruby-debug-base.rb:1:in `&lt;top (required)&gt;'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `require'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `block in require'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:236:in `load_dependency'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `require'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/ruby-debug19-0.11.6/cli/ruby-debug.rb:5:in `&lt;top (required)&gt;'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `require'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `block in require'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:236:in `load_dependency'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `require'
+from (irb):1
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/railties-3.2.1/lib/rails/commands/console.rb:47:in `start'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/railties-3.2.1/lib/rails/commands/console.rb:8:in `start'
+from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/railties-3.2.1/lib/rails/commands.rb:41:in `&lt;top (required)&gt;'
+from script/rails:6:in `require'
+</code></pre>
+
+<p><code>``
+_Seeing this? You're probably still using</code>ruby-debug-base19<code>(0.11.25) and</code>linecache19<code>(0.5.12).  Make sure you manually added the correct versions to your</code>Gemfile`._</p>
+]]></content>
+  </entry>
+  
+</feed>

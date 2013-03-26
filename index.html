@@ -5,11 +5,12 @@
 <!--[if (gt IE 8)|(gt IEMobile 7)|!(IEMobile)|!(IE)]><!--><html class="no-js" lang="en"><!--<![endif]-->
 <head>
   <meta charset="utf-8">
-  <title>My Octopress Blog</title>
-  <meta name="author" content="Your Name">
+  <title>chuckg.notes</title>
+  <meta name="author" content="chuckg">
 
   
-  <meta name="description" content=" Blog Archives Recent Posts ">
+  <meta name="description" content="To get ruby-debug working with ruby-1.9.3-p0 you have to use some as yet
+unpublished versions of ruby-debug-base19 (0.11.26) and it&#8217;s &hellip;">
   
 
   <!-- http://t.co/dKP3o1e -->
@@ -18,10 +19,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   
-  <link rel="canonical" href="http://chuckg.github.com">
+  <link rel="canonical" href="http://chuckg.org">
   <link href="/favicon.png" rel="icon">
   <link href="/stylesheets/screen.css" media="screen, projection" rel="stylesheet" type="text/css">
-  <link href="/atom.xml" rel="alternate" title="My Octopress Blog" type="application/atom+xml">
+  <link href="/atom.xml" rel="alternate" title="chuckg.notes" type="application/atom+xml">
   <script src="/javascripts/modernizr-2.0.js"></script>
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script>!window.jQuery && document.write(unescape('%3Cscript src="./javascripts/lib/jquery.min.js"%3E%3C/script%3E'))</script>
@@ -37,9 +38,7 @@
 
 <body   class="collapse-sidebar sidebar-footer" >
   <header role="banner"><hgroup>
-  <h1><a href="/">My Octopress Blog</a></h1>
-  
-    <h2>A blogging framework for hackers.</h2>
+  <h1><a href="/">chuckg.notes</a></h1>
   
 </hgroup>
 
@@ -51,7 +50,7 @@
   
 <form action="http://google.com/search" method="get">
   <fieldset role="search">
-    <input type="hidden" name="q" value="site:chuckg.github.com" />
+    <input type="hidden" name="q" value="site:chuckg.org" />
     <input class="search" type="text" name="q" results="0" placeholder="Search"/>
   </fieldset>
 </form>
@@ -67,6 +66,210 @@
       <div class="blog-index">
   
   
+  
+    <article>
+      
+  <header>
+    
+      <h1 class="entry-title"><a href="/blog/2012/03/24/ruby-1-dot-9-3-and-ruby-debug/">ruby-1.9.3 and Ruby-debug</a></h1>
+    
+    
+      <p class="meta">
+        
+
+
+
+
+
+
+
+
+  
+
+
+<time datetime="2012-03-24T17:52:00-07:00" pubdate data-updated="true">Mar 24<span>th</span>, 2012</time>
+        
+      </p>
+    
+  </header>
+
+
+  <div class="entry-content"><p>To get <code>ruby-debug</code> working with <code>ruby-1.9.3-p0</code> you have to use some as yet
+unpublished versions of <code>ruby-debug-base19</code> (0.11.26) and it&#8217;s dependency,
+<code>linecache19</code> (0.5.13).  Additionally, you&#8217;ll need to apply the aptly named
+&#8220;debug&#8221; patch to <code>ruby-1.9.3-p0</code>.  I don&#8217;t recall the specific reason the gems
+are not yet available on <a href="http://rubygems.org">rubygems.org</a> (as of
+2012-02-22), but until such time, here&#8217;s how you get <code>ruby-debug</code> working with
+version <code>ruby-1.9.3-p0</code>.</p>
+
+<p><em>Note</em>: If you&#8217;re not using <code>rvm</code>, shame on you. You&#8217;ll need to apply the patch
+manually, which I won&#8217;t detail.  The patch can be found
+<a href="https://github.com/ruby/ruby/pull/47">here</a>.</p>
+
+<p>Apply the &#8220;debug&#8221; patch:</p>
+
+<pre><code>$ rvm reinstall 1.9.3-p0 --patch debug --force-autoconf
+</code></pre>
+
+<p>Point your favorite editor at your <code>Gemfile</code> and add:</p>
+
+<pre><code>gem 'ruby-debug19', :require =&gt; false
+gem 'ruby-debug-base19', :git =&gt; 'https://github.com/tribune/ruby-debug-base19.git', :require =&gt; false
+gem 'linecache19', :git =&gt; 'git@github.com:chuckg/linecache19.git', :branch =&gt; "0_5_13/dependencies", :require =&gt; false
+</code></pre>
+
+<p>And now the secret sauce to allow <code>ruby-debug-base19</code> to compile correctly:</p>
+
+<pre><code>$ bundle config build.ruby-debug-base19 --with-ruby-include=$rvm_path/src/ruby-1.9.3-p0/
+</code></pre>
+
+<p>Without the above command you&#8217;ll receive the
+<code>Gem::Installer::ExtensionBuildError</code> error listed below. If you&#8217;re working
+with a team, it may be useful to check the bundle config into your repository.
+Check out <code>bundle help config</code> for more details.</p>
+
+<h5>rdebug</h5>
+
+<p>The caveat to using git as the gem source for our dependencies is that they
+are installed in a separate (non-standard) gem path, causing <code>rdebug</code> to puke
+when it can&#8217;t find them. <code>bundler</code> to the rescue:</p>
+
+<pre><code>$ bundle exec rdebug ...
+</code></pre>
+
+<p>This executes <code>rdebug</code> within the context of the bundle, thereby including the
+necessary dependencies.</p>
+
+<h2>Common errors:</h2>
+
+<p>For reference (and the glory of search) here are some common errors you might have seen during your journey here.</p>
+
+<h5>ruby-debug</h5>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>bundle install
+</span><span class='line'>...
+</span><span class='line'>Could not find rbx-require-relative-0.0.6 in any of the sources
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><em>You&#8217;re still using the <code>ruby-debug</code> gem, not <code>ruby-debug19</code>.</em></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'><span class="nv">$ </span>rdebug -Itest <span class="nb">test</span>/unit/model_test.rb
+</span><span class='line'>/Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/lib/ruby/site_ruby/1.9.1/rubygems/dependency.rb:247:in <span class="sb">`</span>to_specs<span class="s1">&#39;: Could not find linecache19 (&gt;= 0.5.11) amongst [...] (Gem::LoadError)</span>
+</span><span class='line'><span class="s1"> from /Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/lib/ruby/site_ruby/1.9.1/rubygems/specification.rb:771:in `block in activate_dependencies&#39;</span>
+</span><span class='line'>  from /Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/lib/ruby/site_ruby/1.9.1/rubygems/specification.rb:760:in <span class="sb">`</span>each<span class="s1">&#39;</span>
+</span><span class='line'><span class="s1"> from /Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/lib/ruby/site_ruby/1.9.1/rubygems/specification.rb:760:in `activate_dependencies&#39;</span>
+</span><span class='line'>  from /Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/lib/ruby/site_ruby/1.9.1/rubygems/specification.rb:744:in <span class="sb">`</span>activate<span class="s1">&#39;</span>
+</span><span class='line'><span class="s1"> from /Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/lib/ruby/site_ruby/1.9.1/rubygems.rb:1209:in `gem&#39;</span>
+</span><span class='line'>  from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/bin/rdebug:18:in <span class="sb">`</span>&lt;main&gt;<span class="err">&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><em>Trying using: <code>bundle exec rdebug ...</code></em></p>
+
+<h5>ruby-debug-base19</h5>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+</pre></td><td class='code'><pre><code class='bash'><span class='line'>Gem::Installer::ExtensionBuildError: ERROR: Failed to build gem native extension.
+</span><span class='line'>
+</span><span class='line'>        /Users/rubyist/.rvm/rubies/ruby-1.9.3-p0/bin/ruby extconf.rb
+</span><span class='line'>checking <span class="k">for </span>rb_method_entry_t.called_id in method.h... no
+</span><span class='line'>checking <span class="k">for </span>rb_control_frame_t.method_id in method.h... no
+</span><span class='line'>extconf.rb:16:in <span class="sb">`</span>block in &lt;main&gt;<span class="s1">&#39;: break from proc-closure (LocalJumpError)</span>
+</span><span class='line'><span class="s1"> from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/ruby_core_source-0.1.5/lib/ruby_core_source.rb:18:in `call&#39;</span>
+</span><span class='line'>  from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/ruby_core_source-0.1.5/lib/ruby_core_source.rb:18:in <span class="sb">`</span>create_makefile_with_core<span class="s1">&#39;</span>
+</span><span class='line'><span class="s1"> from extconf.rb:32:in `&lt;main&gt;&#39;</span>
+</span><span class='line'>
+</span><span class='line'>
+</span><span class='line'>An error occured <span class="k">while </span>installing ruby-debug-base19 <span class="o">(</span>0.11.26<span class="o">)</span>, and Bundler cannot <span class="k">continue</span>.
+</span><span class='line'>Make sure that <span class="sb">`</span>gem install ruby-debug-base19 -v <span class="s1">&#39;0.11.26&#39;</span><span class="sb">`</span> succeeds before bundling.
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><em>This is fixed by adding the build flags to your bundle config.</em></p>
+
+<figure class='code'><figcaption><span></span></figcaption><div class="highlight"><table><tr><td class="gutter"><pre class="line-numbers"><span class='line-number'>1</span>
+<span class='line-number'>2</span>
+<span class='line-number'>3</span>
+<span class='line-number'>4</span>
+<span class='line-number'>5</span>
+<span class='line-number'>6</span>
+<span class='line-number'>7</span>
+<span class='line-number'>8</span>
+<span class='line-number'>9</span>
+<span class='line-number'>10</span>
+<span class='line-number'>11</span>
+<span class='line-number'>12</span>
+<span class='line-number'>13</span>
+<span class='line-number'>14</span>
+<span class='line-number'>15</span>
+<span class='line-number'>16</span>
+<span class='line-number'>17</span>
+<span class='line-number'>18</span>
+<span class='line-number'>19</span>
+<span class='line-number'>20</span>
+<span class='line-number'>21</span>
+<span class='line-number'>22</span>
+<span class='line-number'>23</span>
+<span class='line-number'>24</span>
+</pre></td><td class='code'><pre><code class='ruby'><span class='line'><span class="mi">1</span><span class="o">.</span><span class="mi">9</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">p0</span> <span class="p">:</span><span class="mo">001</span> <span class="o">&gt;</span> <span class="nb">require</span> <span class="s1">&#39;ruby-debug&#39;</span>
+</span><span class='line'><span class="ss">LoadError</span><span class="p">:</span> <span class="n">dlopen</span><span class="p">(</span><span class="sr">/Users/</span><span class="n">rubyist</span><span class="o">/.</span><span class="n">rvm</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="mi">1</span><span class="o">.</span><span class="mi">9</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">p0</span><span class="vi">@railsapp</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="n">debug</span><span class="o">-</span><span class="n">base19</span><span class="o">-</span><span class="mi">0</span><span class="o">.</span><span class="mi">11</span><span class="o">.</span><span class="mi">25</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">ruby_debug</span><span class="o">.</span><span class="n">bundle</span><span class="p">,</span> <span class="mi">9</span><span class="p">):</span> <span class="no">Symbol</span> <span class="ow">not</span> <span class="ss">found</span><span class="p">:</span> <span class="n">_ruby_threadptr_data_type</span>
+</span><span class='line'>  <span class="no">Referenced</span> <span class="ss">from</span><span class="p">:</span> <span class="sr">/Users/</span><span class="n">rubyist</span><span class="o">/.</span><span class="n">rvm</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="mi">1</span><span class="o">.</span><span class="mi">9</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">p0</span><span class="vi">@railsapp</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="n">debug</span><span class="o">-</span><span class="n">base19</span><span class="o">-</span><span class="mi">0</span><span class="o">.</span><span class="mi">11</span><span class="o">.</span><span class="mi">25</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">ruby_debug</span><span class="o">.</span><span class="n">bundle</span>
+</span><span class='line'>  <span class="no">Expected</span> <span class="k">in</span><span class="p">:</span> <span class="n">flat</span> <span class="n">namespace</span>
+</span><span class='line'> <span class="k">in</span> <span class="sr">/Users/</span><span class="n">rubyist</span><span class="o">/.</span><span class="n">rvm</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="mi">1</span><span class="o">.</span><span class="mi">9</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">p0</span><span class="vi">@railsapp</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="n">debug</span><span class="o">-</span><span class="n">base19</span><span class="o">-</span><span class="mi">0</span><span class="o">.</span><span class="mi">11</span><span class="o">.</span><span class="mi">25</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">ruby_debug</span><span class="o">.</span><span class="n">bundle</span> <span class="o">-</span> <span class="sr">/Users/</span><span class="n">rubyist</span><span class="o">/.</span><span class="n">rvm</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="mi">1</span><span class="o">.</span><span class="mi">9</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">p0</span><span class="vi">@railsapp</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="n">debug</span><span class="o">-</span><span class="n">base19</span><span class="o">-</span><span class="mi">0</span><span class="o">.</span><span class="mi">11</span><span class="o">.</span><span class="mi">25</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">ruby_debug</span><span class="o">.</span><span class="n">bundle</span>
+</span><span class='line'>  <span class="n">from</span> <span class="sr">/Users/</span><span class="n">rubyist</span><span class="o">/.</span><span class="n">rvm</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="mi">1</span><span class="o">.</span><span class="mi">9</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">p0</span><span class="vi">@railsapp</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">activesupport</span><span class="o">-</span><span class="mi">3</span><span class="o">.</span><span class="mi">2</span><span class="o">.</span><span class="mi">1</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">active_support</span><span class="o">/</span><span class="n">dependencies</span><span class="o">.</span><span class="n">rb</span><span class="p">:</span><span class="mi">251</span><span class="ss">:in</span> <span class="sb">`require&#39;</span>
+</span><span class='line'><span class="sb"> from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `</span><span class="n">block</span> <span class="k">in</span> <span class="nb">require</span><span class="s1">&#39;</span>
+</span><span class='line'><span class="s1"> from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:236:in `load_dependency&#39;</span>
+</span><span class='line'>  <span class="n">from</span> <span class="sr">/Users/</span><span class="n">rubyist</span><span class="o">/.</span><span class="n">rvm</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="mi">1</span><span class="o">.</span><span class="mi">9</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">p0</span><span class="vi">@railsapp</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">activesupport</span><span class="o">-</span><span class="mi">3</span><span class="o">.</span><span class="mi">2</span><span class="o">.</span><span class="mi">1</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">active_support</span><span class="o">/</span><span class="n">dependencies</span><span class="o">.</span><span class="n">rb</span><span class="p">:</span><span class="mi">251</span><span class="ss">:in</span> <span class="sb">`require&#39;</span>
+</span><span class='line'><span class="sb"> from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/ruby-debug-base19-0.11.25/lib/ruby-debug-base.rb:1:in `</span><span class="o">&lt;</span><span class="n">top</span> <span class="p">(</span><span class="n">required</span><span class="p">)</span><span class="o">&gt;</span><span class="s1">&#39;</span>
+</span><span class='line'><span class="s1"> from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `require&#39;</span>
+</span><span class='line'>  <span class="n">from</span> <span class="sr">/Users/</span><span class="n">rubyist</span><span class="o">/.</span><span class="n">rvm</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="mi">1</span><span class="o">.</span><span class="mi">9</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">p0</span><span class="vi">@railsapp</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">activesupport</span><span class="o">-</span><span class="mi">3</span><span class="o">.</span><span class="mi">2</span><span class="o">.</span><span class="mi">1</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">active_support</span><span class="o">/</span><span class="n">dependencies</span><span class="o">.</span><span class="n">rb</span><span class="p">:</span><span class="mi">251</span><span class="ss">:in</span> <span class="sb">`block in require&#39;</span>
+</span><span class='line'><span class="sb"> from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:236:in `</span><span class="n">load_dependency</span><span class="s1">&#39;</span>
+</span><span class='line'><span class="s1"> from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `require&#39;</span>
+</span><span class='line'>  <span class="n">from</span> <span class="sr">/Users/</span><span class="n">rubyist</span><span class="o">/.</span><span class="n">rvm</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="mi">1</span><span class="o">.</span><span class="mi">9</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">p0</span><span class="vi">@railsapp</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="n">debug19</span><span class="o">-</span><span class="mi">0</span><span class="o">.</span><span class="mi">11</span><span class="o">.</span><span class="mi">6</span><span class="o">/</span><span class="n">cli</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="n">debug</span><span class="o">.</span><span class="n">rb</span><span class="p">:</span><span class="mi">5</span><span class="ss">:in</span> <span class="sb">`&lt;top (required)&gt;&#39;</span>
+</span><span class='line'><span class="sb"> from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `</span><span class="nb">require</span><span class="s1">&#39;</span>
+</span><span class='line'><span class="s1"> from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `block in require&#39;</span>
+</span><span class='line'>  <span class="n">from</span> <span class="sr">/Users/</span><span class="n">rubyist</span><span class="o">/.</span><span class="n">rvm</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="mi">1</span><span class="o">.</span><span class="mi">9</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">p0</span><span class="vi">@railsapp</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">activesupport</span><span class="o">-</span><span class="mi">3</span><span class="o">.</span><span class="mi">2</span><span class="o">.</span><span class="mi">1</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">active_support</span><span class="o">/</span><span class="n">dependencies</span><span class="o">.</span><span class="n">rb</span><span class="p">:</span><span class="mi">236</span><span class="ss">:in</span> <span class="sb">`load_dependency&#39;</span>
+</span><span class='line'><span class="sb"> from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/activesupport-3.2.1/lib/active_support/dependencies.rb:251:in `</span><span class="nb">require</span><span class="s1">&#39;</span>
+</span><span class='line'><span class="s1"> from (irb):1</span>
+</span><span class='line'><span class="s1"> from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/railties-3.2.1/lib/rails/commands/console.rb:47:in `start&#39;</span>
+</span><span class='line'>  <span class="n">from</span> <span class="sr">/Users/</span><span class="n">rubyist</span><span class="o">/.</span><span class="n">rvm</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">ruby</span><span class="o">-</span><span class="mi">1</span><span class="o">.</span><span class="mi">9</span><span class="o">.</span><span class="mi">3</span><span class="o">-</span><span class="n">p0</span><span class="vi">@railsapp</span><span class="o">/</span><span class="n">gems</span><span class="o">/</span><span class="n">railties</span><span class="o">-</span><span class="mi">3</span><span class="o">.</span><span class="mi">2</span><span class="o">.</span><span class="mi">1</span><span class="o">/</span><span class="n">lib</span><span class="o">/</span><span class="n">rails</span><span class="o">/</span><span class="n">commands</span><span class="o">/</span><span class="n">console</span><span class="o">.</span><span class="n">rb</span><span class="p">:</span><span class="mi">8</span><span class="ss">:in</span> <span class="sb">`start&#39;</span>
+</span><span class='line'><span class="sb"> from /Users/rubyist/.rvm/gems/ruby-1.9.3-p0@railsapp/gems/railties-3.2.1/lib/rails/commands.rb:41:in `</span><span class="o">&lt;</span><span class="n">top</span> <span class="p">(</span><span class="n">required</span><span class="p">)</span><span class="o">&gt;</span><span class="s1">&#39;</span>
+</span><span class='line'><span class="s1"> from script/rails:6:in `require&#39;</span>
+</span></code></pre></td></tr></table></div></figure>
+
+
+<p><em>Seeing this? You&#8217;re probably still using <code>ruby-debug-base19</code> (0.11.25) and <code>linecache19</code> (0.5.12).  Make sure you manually added the correct versions to your <code>Gemfile</code>.</em></p>
+</div>
+  
+  
+
+
+    </article>
+  
   <div class="pagination">
     
     <a href="/blog/archives">Blog Archives</a>
@@ -78,6 +281,10 @@
     <section>
   <h1>Recent Posts</h1>
   <ul id="recent_posts">
+    
+      <li class="post">
+        <a href="/blog/2012/03/24/ruby-1-dot-9-3-and-ruby-debug/">ruby-1.9.3 and ruby-debug</a>
+      </li>
     
   </ul>
 </section>
@@ -92,7 +299,7 @@
     </div>
   </div>
   <footer role="contentinfo"><p>
-  Copyright &copy; 2013 - Your Name -
+  Copyright &copy; 2013 - chuckg -
   <span class="credit">Powered by <a href="http://octopress.org">Octopress</a></span>
 </p>
 

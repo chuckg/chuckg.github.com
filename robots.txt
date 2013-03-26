@@ -1,4 +1,4 @@
 User-agent: *
 Disallow: 
 
-Sitemap: http://chuckg.github.com/sitemap.xml 
+Sitemap: http://chuckg.org/sitemap.xml 
